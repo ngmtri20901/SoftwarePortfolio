@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { notion, DATABASE_IDS, getPlainText, getMultiSelect, getSelect } from "@/lib/notion";
 import type { NotionTool } from "@/lib/notion";
+import type { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 
 export async function GET() {
   try {
@@ -14,19 +15,33 @@ export async function GET() {
       ],
     });
 
-    const tools: NotionTool[] = response.results.map((page: any) => {
-      const properties = page.properties;
-      
-      return {
-        id: page.id,
-        title: getPlainText(properties.Name.title),
-        description: getPlainText(properties.Description.rich_text),
-        category: getSelect(properties.Category.select) as "Frontend" | "Backend" | "Database" | "DevOps" | "Design" | "Languages",
-        items: getMultiSelect(properties.Items.multi_select),
-        icon: getPlainText(properties.Icon.rich_text),
-        proficiency: getSelect(properties.Proficiency.select) as "Beginner" | "Intermediate" | "Advanced" | "Expert",
-      };
-    });
+    const tools: NotionTool[] = response.results
+      .filter((page): page is PageObjectResponse => 'properties' in page)
+      .map((page) => {
+        const properties = page.properties;
+        
+        return {
+          id: page.id,
+          title: getPlainText(
+            'title' in properties.Name ? properties.Name.title : []
+          ),
+          description: getPlainText(
+            'rich_text' in properties.Description ? properties.Description.rich_text : []
+          ),
+          category: getSelect(
+            'select' in properties.Category ? properties.Category.select : null
+          ) as "Frontend" | "Backend" | "Database" | "DevOps" | "Design" | "Languages",
+          items: getMultiSelect(
+            'multi_select' in properties.Items ? properties.Items.multi_select : []
+          ),
+          icon: getPlainText(
+            'rich_text' in properties.Icon ? properties.Icon.rich_text : []
+          ),
+          proficiency: getSelect(
+            'select' in properties.Proficiency ? properties.Proficiency.select : null
+          ) as "Beginner" | "Intermediate" | "Advanced" | "Expert",
+        };
+      });
 
     return NextResponse.json(tools);
   } catch (error) {

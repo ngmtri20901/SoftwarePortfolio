@@ -13,6 +13,27 @@ export const DATABASE_IDS = {
   CONTACT_SUBMISSIONS: "204803d3-0664-81f0-9ac4-c18a16278400",
 };
 
+// Notion API type definitions
+interface NotionRichText {
+  plain_text: string;
+  href?: string | null;
+}
+
+interface NotionMultiSelectOption {
+  name: string;
+  color?: string;
+}
+
+interface NotionSelectOption {
+  name: string;
+  color?: string;
+}
+
+interface NotionDate {
+  start: string;
+  end?: string | null;
+}
+
 // Type definitions for our data
 export interface NotionProject {
   id: string;
@@ -63,27 +84,27 @@ export interface NotionContactSubmission {
 }
 
 // Helper function to convert Notion rich text to plain text
-export function getPlainText(richText: any[]): string {
+export function getPlainText(richText: NotionRichText[]): string {
   return richText.map((text) => text.plain_text).join("");
 }
 
 // Helper function to convert Notion multi-select to string array
-export function getMultiSelect(multiSelect: any[]): string[] {
+export function getMultiSelect(multiSelect: NotionMultiSelectOption[]): string[] {
   return multiSelect.map((item) => item.name);
 }
 
 // Helper function to get select value
-export function getSelect(select: any): string {
+export function getSelect(select: NotionSelectOption | null): string {
   return select?.name || "";
 }
 
 // Helper function to get URL
-export function getUrl(url: any): string {
+export function getUrl(url: string | null): string {
   return url || "";
 }
 
 // Helper function to get date
-export function getDate(date: any): string {
+export function getDate(date: NotionDate | null): string {
   return date?.start || "";
 }
 
